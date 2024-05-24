@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 // middleware
@@ -24,16 +24,23 @@ async function run() {
     await client.connect();
     // Method-1
     const userCollection = client.db("usersDB").collection("users");
-    app.get("/users", async(req, res) => {
-        const cursor = userCollection.find();
-        const result = await cursor.toArray();
-        res.send(result);
-    });    
-    app.post("/users", async(req, res) => {
-        const user = req.body;
-        console.log("new user", user);
-        const result = await userCollection.insertOne(user);
-        res.send(result);
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      console.log("new user", user);
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("please delete from database", id);
+      const query = { _id: new ObjectId(id) }
+      const result = await userCollection.deleteOne(query);
+      res.send(result)
     });
     // Method-2
     // const database = client.db("usersDB");
@@ -56,9 +63,12 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-    res.send("SIMPLE CRUD IS RUNNING")
+  res.send("SIMPLE CRUD IS RUNNING")
 });
 
 app.listen(port, (req, res) => {
-    console.log(`simple crud is running on port: ${port}`)
-})
+  console.log(`simple crud is running on port: ${port}`)
+});
+
+
+
